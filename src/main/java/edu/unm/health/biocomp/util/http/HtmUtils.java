@@ -195,10 +195,7 @@ public class HtmUtils
     {
       for (String cssinclude: cssincludes)
       {
-        if (cssinclude.contains("/"))
-          htm+=("<LINK REL=\"stylesheet\" HREF=\""+cssinclude+"\" />\n");
-        else
-          htm+=("<LINK REL=\"stylesheet\" type=\"text/css\" HREF=\"/"+proxy_prefix+request.getContextPath()+"/css/"+cssinclude+"\" />\n");
+        htm+=("<LINK REL=\"stylesheet\" type=\"text/css\" HREF=\"/"+((proxy_prefix==null)?proxy_prefix:"")+cssinclude+"\" />\n");
       }
     }
     if (css!=null && !css.isEmpty())
@@ -207,10 +204,7 @@ public class HtmUtils
     {
       for (String jsinclude: jsincludes)
       {
-        if (jsinclude.contains("/"))
-          htm+=("<SCRIPT SRC=\""+jsinclude+"\"></SCRIPT>\n");
-        else
-          htm+=("<SCRIPT SRC=\"/"+proxy_prefix+request.getContextPath()+"/js/"+jsinclude+"\"></SCRIPT>\n");
+        htm+=("<SCRIPT SRC=\""+((proxy_prefix==null)?proxy_prefix:"")+jsinclude+"\"></SCRIPT>\n");
       }
     }
     if (js!=null && !js.isEmpty())
@@ -218,16 +212,6 @@ public class HtmUtils
     htm+=("</HEAD>\n"+"<BODY BGCOLOR=\""+color+"\">\n");
     htm+=("<DIV ID=\"ddtooltip\"></DIV>\n"+"<SCRIPT TYPE=\"text/javascript\">ddtip_init()</SCRIPT>\n");
     return htm;
-  }
-  /////////////////////////////////////////////////////////////////////////////
-  /**	Legacy entry point.
-  */
-  public static String HeaderHtm(String title,
-	List<String> jsincludes, List<String> cssincludes,
-	String js, String css,
-	String color, HttpServletRequest request)
-  {
-    return HeaderHtm(title, jsincludes, cssincludes, js, css, color, request, "tomcat");
   }
   /////////////////////////////////////////////////////////////////////////////
   /**	Output lines to HTML delimited by line breaks.
@@ -272,7 +256,7 @@ public class HtmUtils
   /**	Download specified string to browser with specified file name.
   */
   public static boolean DownloadString(HttpServletResponse response,
-        ServletOutputStream ostream,String str,String fname)
+        ServletOutputStream ostream, String str, String fname)
         throws IOException
   {
     //byte[] outbytes=Base64Decoder.decodeToBytes(str) ;
