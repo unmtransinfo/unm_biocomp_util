@@ -168,24 +168,11 @@ public class HtmUtils
   }
   /////////////////////////////////////////////////////////////////////////////
   /**	Header HTML with included JavaScript and CSS.
-
-	New: No more hard-coding of specific JS or CSS files in
-	this function.  Use jsincludes and cssincludes for all.
-	Also no JS code here.
-
-	If jsinclude|cssinclude bare filename (no '/'),
-	prepend with conventional URL prefix, e.g. "/tomcat/biocomp/js".
-	If path specified, then include unmodified (could be via
-	Tomcat, httpd, or external URL).
-
-	proxy_prefix normally "tomcat", "jetty", etc., with Apache proxy to
-	port 8080 or 8081, etc.
   */
   public static String HeaderHtm(String title,
 	List<String> jsincludes, List<String> cssincludes,
 	String js, String css,
-	String color, HttpServletRequest request,
-	String proxy_prefix)
+	String color, HttpServletRequest request)
   {
     String htm=(
     "<!DOCTYPE html>\n"+
@@ -194,18 +181,14 @@ public class HtmUtils
     if (cssincludes!=null)
     {
       for (String cssinclude: cssincludes)
-      {
-        htm+=("<LINK REL=\"stylesheet\" type=\"text/css\" HREF=\"/"+((proxy_prefix==null)?proxy_prefix:"")+cssinclude+"\" />\n");
-      }
+        htm+=("<LINK REL=\"stylesheet\" type=\"text/css\" HREF=\""+cssinclude+"\" />\n");
     }
     if (css!=null && !css.isEmpty())
       htm+=("<STYLE TYPE=\"text/css\">\n"+css+"\n</STYLE>\n");
     if (jsincludes!=null)
     {
       for (String jsinclude: jsincludes)
-      {
-        htm+=("<SCRIPT SRC=\""+((proxy_prefix==null)?proxy_prefix:"")+jsinclude+"\"></SCRIPT>\n");
-      }
+        htm+=("<SCRIPT SRC=\""+jsinclude+"\"></SCRIPT>\n");
     }
     if (js!=null && !js.isEmpty())
       htm+=("<SCRIPT>\n"+js+"\n</SCRIPT>\n");
