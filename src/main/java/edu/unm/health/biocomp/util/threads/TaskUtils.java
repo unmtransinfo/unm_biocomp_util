@@ -14,15 +14,14 @@ public class TaskUtils
 {
   /**	Execute task; indicate progress to stdout.
   */
-  public static <T> T ExecTask(ExecutorService exec,Callable<T> task,
-	String name,int tpoll)
+  public static <T> T ExecTask(ExecutorService exec, Callable<T> task, String name, int tpoll)
   {
     T val=null;
     Future<T> fut = exec.submit(task);
     try {
       while (!fut.isDone())
       {
-        System.out.println(name+"...");
+        System.out.println(name);
         Thread.currentThread().sleep(tpoll);
       }
       Thread.currentThread().sleep(500); //kludge; wait for process exit
@@ -41,16 +40,14 @@ public class TaskUtils
   /**	Execute task; indicate progress, as reported by
 	TaskStatus object, to stdout.
   */
-  public static <T> T ExecTask(ExecutorService exec, Callable<T> task,
-		TaskStatus tst,
-		String name,int tpoll)
+  public static <T> T ExecTask(ExecutorService exec, Callable<T> task, TaskStatus tst, String name, int tpoll)
   {
     T val=null;
     Future<T> fut= exec.submit(task);
     try {
       while (!fut.isDone())
       {
-        System.out.println(name+": "+tst.status()+"...");
+        System.out.println(name+": "+tst.status());
         Thread.currentThread().sleep(tpoll);
       }
       Thread.currentThread().sleep(500); //kludge; wait for process exit
@@ -83,7 +80,7 @@ public class TaskUtils
     out.println(
 "<SCRIPT>\n"+
 "var pwin=window.open('','"+progresswin+"');\n"+
-"pwin.document.writeln('"+name+": task launching...<BR>');\n"+
+"pwin.document.writeln('"+name+": task launching.<BR>');\n"+
 "</SCRIPT>");
     out.flush();
     response.flushBuffer();
@@ -95,7 +92,7 @@ public class TaskUtils
       {
         out.println(
 "<SCRIPT>\n"+
-"pwin.document.writeln('"+name+": "+tst.status()+" ...<BR>');\n"+
+"pwin.document.writeln('"+name+": "+tst.status()+"<BR>');\n"+
 "if (navigator.appName.match('Explorer')) pwin.scrollTo(0,99999);\n"+
 "else pwin.scrollTo(0, pwin.document.body.offsetHeight);\n"+
 "</SCRIPT>");
@@ -173,9 +170,7 @@ public class TaskUtils
         {
           String statmsg=tst.status();
           System.out.print(name+" ["+(i+1)+"]:");
-          if (!statmsg.isEmpty())
-            System.out.print(" ("+statmsg+" )");
-          System.out.println(" ...");
+          System.out.println((!statmsg.isEmpty())?(" ("+statmsg+" )"):"");
           Thread.currentThread().sleep(tpoll);
         }
       } catch (InterruptedException e) {
