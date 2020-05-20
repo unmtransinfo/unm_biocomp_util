@@ -5,7 +5,7 @@ import java.lang.reflect.*; //Method
 public class JREUtils
 {
   /////////////////////////////////////////////////////////////////////////////
-  private static String JREVersion() throws Exception
+  public static String JREVersion() throws Exception
   {
     String jre_ver=null;
     Class c = Class.forName("java.lang.Runtime"); // JRE9+
