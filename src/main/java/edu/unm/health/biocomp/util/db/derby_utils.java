@@ -191,32 +191,31 @@ public class derby_utils
   }
   /////////////////////////////////////////////////////////////////////////////
   public static Boolean ExportTableToCSV(Connection dbcon,String dbschema,
-	String dbtable,
-	String fpath,String delim,String qchar,String charset,int verbose)
+	String dbtable, String fpath,String delim,String qchar,String charset,int verbose)
       throws SQLException,IOException,FileNotFoundException
   {
     String sql=("CALL SYSCS_UTIL.SYSCS_EXPORT_TABLE (");
     sql+=("'"+dbschema+"',");
     sql+=("'"+dbtable+"',");
     sql+=("'"+fpath+"',");
-    sql+=((delim==null)?("null,"):("'"+delim+"',"));
+    if (delim==null)
+      sql+=("null,");
+    else if (delim=="\t") //This may be impossible.
+      sql+=("'\\t',");
+    else
+      sql+=("'"+delim+"',");
     sql+=((qchar==null)?("null,"):("'"+qchar+"',"));
     sql+=((charset==null)?("null)"):("'"+charset+"')"));
-    //System.err.println("DEBUG: sql=\""+sql+"\"");
+    if (verbose>0) System.err.println("DEBUG: sql=\""+sql+"\"");
     boolean ok=Execute(dbcon,sql);
     List<String> colnames =  GetColumnList(dbcon,dbschema,dbtable,verbose);
-    if (verbose>0)
-    {
-      System.err.println("table \""+dbtable+"\" exported to \""+ofile+"\"; columns: ");
-      for (String colname: colnames) System.err.println("\t"+colname);
-    }
 
     //Columns to header line.  Why so hard?
-    File ftmp=File.createTempFile("derby_utils","_tmp.csv");
+    File ftmp=File.createTempFile("derby_utils","_tmp.txt");
     PrintWriter ftmp_writer=new PrintWriter(new BufferedWriter(new FileWriter(ftmp,false)));
     int i=0;
     for (String colname: colnames) 
-      ftmp_writer.write(((i++>0)?",":"")+"\""+colname+"\"");
+      ftmp_writer.write(((i++>0)?delim:"")+colname);
     ftmp_writer.write("\n");
 
     File fout = new File(fpath);
@@ -227,9 +226,20 @@ public class derby_utils
 
     bur=new BufferedReader(new FileReader(ftmp));
     PrintWriter fout_writer=new PrintWriter(new BufferedWriter(new FileWriter(fout,false))); //overwrite
-    while ((line=bur.readLine())!=null)
+    i=0;
+    while ((line=bur.readLine())!=null) {
       fout_writer.write(line+"\n");
+      ++i;
+    }
     ftmp.delete();
+    if (verbose>0)
+    {
+      System.err.println("Table \""+dbtable+"\" exported to \""+ofile+"\"");
+      System.err.print("Columns: ");
+      for (String colname: colnames) System.err.print(colname+",");
+      System.err.println("");
+      System.err.println("Rows: "+i);
+    }
 
     return ok;
   }
@@ -259,7 +269,7 @@ public class derby_utils
       +"  mode (one of):\n"
       +"    -create ................ create db\n"
       +"    -describe .............. describe (schema or table)\n"
-      +"    -export_table .......... export table (CSV)\n"
+      +"    -export_table .......... export table (TSV)\n"
       +"    -list_tables ........... list tables\n"
       +"    -drop_all_tables ....... drop all tables\n"
       +"  options:\n"
@@ -304,6 +314,7 @@ public class derby_utils
     Connection dbcon=null;
     try { dbcon=DBConnectEmbedded(dbname,dbdir,create); }
     catch (SQLException e) { Help("Derby connection failed: "+e.getMessage()); }
+    int i=0;
     if (verbose>0 && dbcon!=null)
     {
       System.err.println("Derby connection ok: jdbc:derby:"+dbdir+"/"+dbname);
@@ -326,13 +337,18 @@ public class derby_utils
     {
       if (ofile.isEmpty()) { Help("ERROR: -export_table requires -o OFILE"); }
       if (dbtable.isEmpty()) { Help("ERROR: -export_table requires -dbtable TNAME"); }
-      boolean ok = ExportTableToCSV(dbcon,dbschema,dbtable,ofile,null,null,null,verbose);
+      //String delim="\t";
+      String delim=",";
+      String qchar=null;
+      String charset=null;
+      boolean ok = ExportTableToCSV(dbcon,dbschema,dbtable,ofile,delim,qchar,charset,verbose);
     }
     else if (list_tables)
     {
       ArrayList<String> dbtables = GetTableList(dbcon,dbschema);
+      i=0;
       for (String dbtable: dbtables)
-        System.out.println("\t"+dbschema+"."+dbtable);
+        System.out.println("\t"+i+". "+dbschema+"."+dbtable);
     }
     else if (drop_all_tables)
     {
