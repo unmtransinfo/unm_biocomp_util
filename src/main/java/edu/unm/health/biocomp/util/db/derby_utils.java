@@ -194,7 +194,7 @@ public class derby_utils
 	String dbtable, String fpath,String delim,String qchar,String charset,int verbose)
       throws SQLException,IOException,FileNotFoundException
   {
-    String sql=("CALL SYSCS_UTIL.SYSCS_EXPORT_TABLE (");
+    String sql=("CALL SYSCS_UTIL.SYSCS_EXPORT_TABLE(");
     sql+=("'"+dbschema+"',");
     sql+=("'"+dbtable+"',");
     sql+=("'"+fpath+"',");
@@ -207,40 +207,41 @@ public class derby_utils
     sql+=((qchar==null)?("null,"):("'"+qchar+"',"));
     sql+=((charset==null)?("null)"):("'"+charset+"')"));
     if (verbose>0) System.err.println("DEBUG: sql=\""+sql+"\"");
-    boolean ok=Execute(dbcon,sql);
-    List<String> colnames =  GetColumnList(dbcon,dbschema,dbtable,verbose);
+
+    boolean ok = Execute(dbcon,sql);
 
     //Columns to header line.  Why so hard?
-    File ftmp=File.createTempFile("derby_utils","_tmp.txt");
-    PrintWriter ftmp_writer=new PrintWriter(new BufferedWriter(new FileWriter(ftmp,false)));
-    int i=0;
-    for (String colname: colnames) 
-      ftmp_writer.write(((i++>0)?delim:"")+colname);
-    ftmp_writer.write("\n");
+//    List<String> colnames =  GetColumnList(dbcon,dbschema,dbtable,verbose);
+//
+//    File ftmp=File.createTempFile("derby_utils","_tmp.txt");
+//    PrintWriter ftmp_writer=new PrintWriter(new BufferedWriter(new FileWriter(ftmp,false)));
+//    int i=0;
+//    for (String colname: colnames) 
+//      ftmp_writer.write(((i++>0)?delim:"")+colname);
+//    ftmp_writer.write("\n");
+//
+//    File fout = new File(fpath);
+//    BufferedReader bur=new BufferedReader(new FileReader(fout));
+//    String line;
+//    while ((line=bur.readLine())!=null)
+//      ftmp_writer.write(line+"\n");
+//    bur=new BufferedReader(new FileReader(ftmp));
+//    PrintWriter fout_writer=new PrintWriter(new BufferedWriter(new FileWriter(fout,false))); //overwrite
+//    i=0;
+//    while ((line=bur.readLine())!=null) {
+//      fout_writer.write(line+"\n");
+//      ++i;
+//    }
+//    ftmp.delete();
+//    if (verbose>0)
+//    {
+//      System.err.print("Columns: ");
+//      for (String colname: colnames) System.err.print(colname+" ");
+//      System.err.println("");
+//      System.err.println("Rows: "+i);
+//    }
 
-    File fout = new File(fpath);
-    BufferedReader bur=new BufferedReader(new FileReader(fout));
-    String line;
-    while ((line=bur.readLine())!=null)
-      ftmp_writer.write(line+"\n");
-
-    bur=new BufferedReader(new FileReader(ftmp));
-    PrintWriter fout_writer=new PrintWriter(new BufferedWriter(new FileWriter(fout,false))); //overwrite
-    i=0;
-    while ((line=bur.readLine())!=null) {
-      fout_writer.write(line+"\n");
-      ++i;
-    }
-    ftmp.delete();
-    if (verbose>0)
-    {
-      System.err.println("Table \""+dbtable+"\" exported to \""+ofile+"\"");
-      System.err.print("Columns: ");
-      for (String colname: colnames) System.err.print(colname+",");
-      System.err.println("");
-      System.err.println("Rows: "+i);
-    }
-
+    System.err.println("Table \""+dbtable+"\" exported to \""+ofile+"\"");
     return ok;
   }
   /////////////////////////////////////////////////////////////////////////////
@@ -337,18 +338,26 @@ public class derby_utils
     {
       if (ofile.isEmpty()) { Help("ERROR: -export_table requires -o OFILE"); }
       if (dbtable.isEmpty()) { Help("ERROR: -export_table requires -dbtable TNAME"); }
-      //String delim="\t";
-      String delim=",";
+      //String delim="\t"; //Fixable?
+      String delim=null;
       String qchar=null;
       String charset=null;
-      boolean ok = ExportTableToCSV(dbcon,dbschema,dbtable,ofile,delim,qchar,charset,verbose);
+      try {
+        boolean ok = ExportTableToCSV(dbcon,dbschema,dbtable,ofile,delim,qchar,charset,verbose);
+      }
+      catch (Exception e) {
+        System.err.println(e.getMessage());
+      }
     }
     else if (list_tables)
     {
       ArrayList<String> dbtables = GetTableList(dbcon,dbschema);
       i=0;
-      for (String dbtable: dbtables)
-        System.out.println("\t"+i+". "+dbschema+"."+dbtable);
+      for (String dbtable: dbtables) {
+	++i;
+        System.out.println(dbschema+"."+dbtable);
+      }
+      System.err.println("n_table: "+i);
     }
     else if (drop_all_tables)
     {
