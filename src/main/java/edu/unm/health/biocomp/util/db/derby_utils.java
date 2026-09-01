@@ -160,7 +160,7 @@ public class derby_utils
     }
   }
   /////////////////////////////////////////////////////////////////////////////
-  public static List<String> GetColumnList(Connection dbcon,String dbschema,String dbtable,int verbose)
+  public static ArrayList<String> GetColumnList(Connection dbcon,String dbschema,String dbtable,int verbose)
       throws SQLException
   {
     String sql=("SELECT * FROM "+dbschema+"."+dbtable);
@@ -257,6 +257,7 @@ public class derby_utils
   private static Boolean describe=false;
   private static Boolean create=false;
   private static Boolean list_tables=false;
+  private static Boolean list_columns=false;
   private static Boolean drop_all_tables=false;
 
   /////////////////////////////////////////////////////////////////////////////
@@ -299,6 +300,7 @@ public class derby_utils
       else if (args[i].equals("-export_table")) export_table=true;
       else if (args[i].equals("-drop_all_tables")) drop_all_tables=true;
       else if (args[i].equals("-list_tables")) list_tables=true;
+      else if (args[i].equals("-list_columns")) list_columns=true;
       else if (args[i].equals("-v")) verbose=1;
       else if (args[i].equals("-vv")) verbose=2;
       else if (args[i].equals("-h")) Help("");
@@ -358,6 +360,16 @@ public class derby_utils
         System.out.println(dbschema+"."+dbtable);
       }
       System.err.println("n_table: "+i);
+    }
+    else if (list_columns)
+    {
+      ArrayList<String> cols = GetColumnList(dbcon,dbschema,dbtable,verbose);
+      i=0;
+      for (String tag: cols) {
+	++i;
+        System.out.println(tag);
+      }
+      System.err.println("n_col: "+i);
     }
     else if (drop_all_tables)
     {
